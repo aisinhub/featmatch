@@ -31,9 +31,16 @@ class SSLTrainer(Trainer):
                                M=self.config['transform']['data_augment']['M'])
         Ttrain = T.Compose([Ttrain, T.ToTensor()])
         Tval = T.ToTensor()
-        Tsimple = T.Compose([T.RandomHorizontalFlip(),
-                             T.RandomCrop(self.config['data']['shape'], padding=self.config['data']['shape']//16),
-                             T.ToTensor()])
+        # edit
+        Tsimple = T.Compose([
+                        T.Resize(self.config['data']['shape']), # 画像サイズを統一
+                        T.RandomHorizontalFlip(),
+                        T.RandomCrop(self.config['data']['shape'], padding=self.config['data']['shape']//16),
+                        T.ToTensor()])
+
+        # Tsimple = T.Compose([T.RandomHorizontalFlip(),
+        #                      T.RandomCrop(self.config['data']['shape'], padding=self.config['data']['shape']//16),
+        #                      T.ToTensor()])
 
         if self.config['transform']['preprocess']['type'] == 'zca':
             Tnorm = data.ZCATransformer(self.config['transform']['preprocess']['config'])

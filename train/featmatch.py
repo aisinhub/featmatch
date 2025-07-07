@@ -9,7 +9,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import sys
-sys.path.append('.')
+# sys.path.append('.')
+sys.path.append('/home/FeatMatch') #edit
 from train import ssltrainer
 from model import FeatMatch
 from loss import common

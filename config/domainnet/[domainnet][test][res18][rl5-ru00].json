@@ -2,7 +2,8 @@
   "data":
   {
     "dataset": "domainnet",
-    "root_dir": "dataset/domainnet",
+    "root_dir": "/home/dataset/featmatch_data/domainnet",  
+    "_comment": "edit",
     "tgt_domains": ["real"],
     "src_domains": ["clipart", "painting", "sketch", "quickdraw"],
     "shape": 128,

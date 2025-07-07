@@ -2,7 +2,7 @@
   "data":
   {
     "dataset": "cifar10",
-    "root_dir": "dataset/cifar-10",
+    "root_dir": "/home/dataset/cifar10/cifar-10-batches-py",
     "tgt_domains": "cifar10",
     "src_domains": null,
     "shape": 32,
