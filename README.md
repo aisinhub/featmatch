@@ -1,4 +1,5 @@
 ## FeatMatch: Feature-Based Augmentation for Semi-Supervised Learning
+<!-- ## FeatMatch: Feature-Based Augmentation for Semi-Supervised Learning
 
 This is the PyTorch implementation of our paper:\
 **FeatMatch: Feature-Based Augmentation for Semi-Supervised Learning**\
@@ -178,4 +179,4 @@ This work was funded by DARPA’s Learning with Less Labels (LwLL) program under
 [Jia-Bin Huang]: https://filebox.ece.vt.edu/~jbhuang/
 [Zsolt Kira]: https://www.cc.gatech.edu/~zk15/
 [arXiv]: https://arxiv.org/abs/2007.08505
-[Project]: https://sites.google.com/view/chiawen-kuo/home/featmatch
+[Project]: https://sites.google.com/view/chiawen-kuo/home/featmatch -->

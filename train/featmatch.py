@@ -415,7 +415,7 @@ if __name__ == '__main__':
         if args.mode != 'test':
             trainer.train()
 
-        acc_val, acc_test = trainer.test()
+        acc_val, acc_test = trainer.test() #edit 評価コード部分
         acc_median = metric.median_acc(os.path.join(args.save_root, 'results.txt'))
         reporter.record(acc_val, acc_test, acc_median)
         with open(args.save_root/'final_result.txt', 'w') as file:
