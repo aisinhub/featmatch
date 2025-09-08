@@ -1,5 +1,5 @@
 ## FeatMatch: Feature-Based Augmentation for Semi-Supervised Learning
-## 以下は評価コードに関する説明
+## t-nesをCSVファイルで出力
 <!-- ## FeatMatch: Feature-Based Augmentation for Semi-Supervised Learning
 
 This is the PyTorch implementation of our paper:\
