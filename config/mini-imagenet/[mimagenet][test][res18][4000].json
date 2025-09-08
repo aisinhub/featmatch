@@ -2,10 +2,10 @@
   "data":
   {
     "dataset": "mini-imagenet",
-    "root_dir": "dataset/mini-imagenet",
+    "root_dir": "/home/dataset/mini-imagenet",
     "tgt_domains": "mini-imagenet",
     "src_domains": null,
-    "shape": 84,
+    "shape": 128,
     "Nv": 4000,
     "Nl": 4000,
     "Nu": null,

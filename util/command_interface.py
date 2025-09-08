@@ -17,7 +17,7 @@ def command_interface(title=None):
     parser.add_argument('--iters', '-i', default=1, type=int, help='number of iterations to run the experiment')
     parser.add_argument('--omniscient', '-o', action='store_true', help='if specified, set validation set = test set')
     parser.add_argument('--overwrite', '-ow', action='store_true', help='if specified, overwrite existing folder without asking')
-    parser.add_argument('--workers', '-w', default=12, type=int, help='number of workers for the dataloader')
+    parser.add_argument('--workers', '-w', default=24, type=int, help='number of workers for the dataloader')
     parser.add_argument('--amp', '-a', action='store_true', help='if specified, turn amp on')
     args = parser.parse_args()
     pprint(vars(args))
@@ -25,6 +25,7 @@ def command_interface(title=None):
     config = json.load(open(args.config))
 
     save_root = Path('weights')/args.name
+    # save_root = Path('exp_weights')/args.name
     if args.mode == 'new' and Path(save_root).exists():
 
         if not args.overwrite and args.name != 'exp':

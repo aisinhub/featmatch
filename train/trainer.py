@@ -175,13 +175,13 @@ class Trainer(object):
                 ckpt_file = self.root_dir / 'best_ckpt'
             else:
                 raise KeyError
-            checkpoint = torch.load(ckpt_file, map_location=self.default_device)
+            checkpoint = torch.load(ckpt_file, map_location=self.default_device) #map_locationは、チェックポイントをどのデバイス（例: CPU, GPU）にロードするかを指定
 
             for obj in self.state_objs:
                 getattr(self, obj).load_state_dict(checkpoint[obj])
             for obj in self.attr_objs:
                 setattr(self, obj, checkpoint[obj])
-            self.scaler.load_state_dict(checkpoint["amp"])
+            self.scaler.load_state_dict(checkpoint["amp"]) #AMP（Automatic Mixed Precision）を使用している場合、GradScalerの状態もチェックポイントから復元
             curr_iter = checkpoint['last_iter'] + 1
             curr_result = checkpoint['curr_result']
             best_result = checkpoint['best_result']
@@ -247,7 +247,9 @@ class Trainer(object):
                     with torch.no_grad():
                         for i, data in enumerate(self.dataloader_val):
                             with amp.autocast(enabled=self.args.amp):
-                                results = self.forward_eval(data)
+                                results = self.forward_eval(data) #データを入力して，スコアを受け取る
+                                # print(data) #edit
+                                # print(results) #edit
                             self.metric.record(results.pop('y_true'), results.pop('y_pred'), clear=False)
                             for c, results_c in results.items():
                                 for k, v in results_c.items():
@@ -279,6 +281,8 @@ class Trainer(object):
             for _, data in enumerate(self.dataloader_test):
                 with amp.autocast(enabled=self.args.amp):
                     results = self.forward_eval(data)
+                    # print("test_result", results) #edit
+                    # print(results) #edit
                 self.metric.record(results['y_true'], results['y_pred'], clear=False)
         test_acc = self.metric.average(clear=True)
 

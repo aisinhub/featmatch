@@ -47,12 +47,12 @@ class FeatMatchTrainer(ssltrainer.SSLTrainer):
             bs = (self.config['train']['bsl'] + self.config['train']['bsu'])*self.config['transform']['data_augment']['K']
             fl = []
             for i in range(math.ceil(len(xl) / bs)):
-                xli = self.Tnorm(xl[i*bs:min((i+1)*bs, len(xl))].to(self.default_device))
-                fli = self.model.extract_feature(xli)
+                xli = self.Tnorm(xl[i*bs:min((i+1)*bs, len(xl))].to(self.default_device)) #バッチを指定されたデバイス（self.default_device）に移動
+                fli = self.model.extract_feature(xli) #モデルの extract_feature メソッドを呼び出して、特徴量を抽出しfliに代入
                 fl.append(fli.detach().clone().float().cpu())
             fl = torch.cat(fl)
             yl = torch.tensor(labeled_dset.y).cpu()
-        self.model.train(mode)
+        self.model.train(mode) #処理後にモデルのモードを元の状態（学習中か評価中か）に戻す
 
         return fl, yl
 
@@ -62,16 +62,16 @@ class FeatMatchTrainer(ssltrainer.SSLTrainer):
 
         fu = torch.cat(self.fu).detach().clone()
         pu = torch.cat(self.pu).detach().clone()
-        prob, yu = torch.max(pu, dim=1)
+        prob, yu = torch.max(pu, dim=1) #各データポイントの予測確率の中で最も高い確率 prob と、その確率に対応するクラスラベル yu を取得
 
         flag = False
         for _ in range(max_iter):
             idx_thres = (prob > thres)
             yu_ = yu[idx_thres]
-            class_distribution = torch.stack([torch.sum(yu_ == i) for i in range(self.config['model']['classes'])])
+            class_distribution = torch.stack([torch.sum(yu_ == i) for i in range(self.config['model']['classes'])]) #閾値を超えたデータポイントのクラス分布を計算
 
-            if not (class_distribution > self.config['model']['pk']).all():
-                thres = thres / 2.
+            if not (class_distribution > self.config['model']['pk']).all(): #クラスのデータ数が pk（各クラスから抽出するプロトタイプの数）より少ないかどうかをチェック
+                thres = thres / 2. #もし,一つでもpkより少ないクラスがあれば閾値を下げる
             else:
                 flag = True
                 break
@@ -80,7 +80,7 @@ class FeatMatchTrainer(ssltrainer.SSLTrainer):
         del self.pu[:]
 
         if flag:
-            return fu[idx_thres], yu[idx_thres]
+            return fu[idx_thres], yu[idx_thres] #信頼性の高いデータの特徴量fu[]とラベルyuを返す
         else:
             return None, None
 
@@ -119,10 +119,10 @@ class FeatMatchTrainer(ssltrainer.SSLTrainer):
                     yp.append(torch.full((pku,), yi, device=self.default_device, dtype=torch.long))
                     lp.append(torch.zeros_like(yp[-1]))
         self.fp = torch.cat(fp).to(self.default_device)
-        self.yp = torch.cat(yp).to(self.default_device)
-        self.lp = torch.cat(lp).to(self.default_device)
+        self.yp = torch.cat(yp).to(self.default_device) #yp, lpはプロトタイプのメタデータ． yp：クラスラベル，lp；0なら
+        self.lp = torch.cat(lp).to(self.default_device) 
 
-    def extract_fp_per_class(self, fx, n, record_mean=True):
+    def extract_fp_per_class(self, fx, n, record_mean=True): #与えられた特徴量 fx のセットから、指定された数 n のプロトタイプfpを抽出
         if n == 1:
             fp = torch.mean(fx, dim=0, keepdim=True)
         elif record_mean:
@@ -131,7 +131,7 @@ class FeatMatchTrainer(ssltrainer.SSLTrainer):
             if n >= len(fx):
                 fp = fx
             else:
-                fp = self.kmeans(fx, n, 'cosine')
+                fp = self.kmeans(fx, n, 'cosine') #プロトタイプのうち1つは,特徴量セット fx の平均ベクトルに割り当て,残りの n-1 個のプロトタイプは、K-Meansクラスタリングで抽出
             fp = torch.cat([fm, fp], dim=0)
         else:
             if n >= len(fx):
@@ -139,6 +139,7 @@ class FeatMatchTrainer(ssltrainer.SSLTrainer):
             else:
                 fp = self.kmeans(fx, n, 'cosine')
 
+        # print("fp", fp.size()) #edit
         return fp
 
     @staticmethod
@@ -305,8 +306,9 @@ class FeatMatchTrainer(ssltrainer.SSLTrainer):
 
         return pred_x, loss, loss_pred, loss_con, loss_graph
 
-    def eval2(self, x, y):
-        logits_xg, logits_xf, _, _, _ = self.model(x, self.fp)
+    def eval2(self, x, y): #推論では，eval2の方が使われる. yがgT
+        # logits_xg, logits_xf, _, _, _ = self.model(x, self.fp) #推論 【CSV時はコメントアウト】
+        logits_xg, logits_xf, _, fxg, _ = self.model(x, self.fp) #tSNEのとき
 
         # Compute pseudo label
         prob_fake = torch.softmax(logits_xg.detach(), dim=1)
@@ -319,10 +321,12 @@ class FeatMatchTrainer(ssltrainer.SSLTrainer):
         x_mix, prob_mix, _, _ = self.data_mixup(x, prob_gt, x, prob_fake)
 
         # Forward pass on mixed data
-        logits_xg_mix, logits_xf_mix, _, _, _ = self.model(x_mix, self.fp)
+        # logits_xg_mix, logits_xf_mix, _, _, _ = self.model(x_mix, self.fp) #xg_minは，データ拡張手法であるMixupによって生成された混合データをモデルに入力したときのスコア  【CSV時はコメントアウト】
+        logits_xg_mix= logits_xg
+        logits_xf_mix= logits_xf
 
         # CLF loss and Mixup loss
-        loss_con = loss_pred = self.criterion(None, prob_mix, logits_xg_mix, None)
+        loss_con = loss_pred = self.criterion(None, prob_mix, logits_xg_mix, None) #prob_mixはミックスされたデータ用の疑似gTラベル．これと推論値のlogits_cg_mixで損失を計算
 
         # Graph loss
         loss_graph = self.criterion(None, prob_mix, logits_xf_mix, None)
@@ -333,6 +337,21 @@ class FeatMatchTrainer(ssltrainer.SSLTrainer):
 
         # Prediction
         pred_x = torch.softmax(logits_xg.detach(), dim=1)
+        
+        #CSVファイルへの書き込み
+        output_filename = 'cifar_10_eval.csv'
+        y_np = y.detach().cpu().numpy().reshape(-1, 1)
+        fxg_np = fxg.detach().cpu().numpy()
+        
+        # yを先頭にしてfxgと結合
+        combined_data = np.concatenate((y_np, fxg_np), axis=1)
+        print("comb size", combined_data.shape)
+        
+        # ファイルを追記モード ('a') で開く
+        with open(output_filename, 'a') as f:
+            np.savetxt(f, combined_data, delimiter=',')
+        
+        print("saved csv")
 
         return pred_x, loss, loss_pred, loss_con, loss_graph
 
@@ -373,12 +392,12 @@ class FeatMatchTrainer(ssltrainer.SSLTrainer):
     def forward_eval(self, data):
         self.model.eval()
         x = self.Tnorm(data[0].to(self.default_device))
-        y = data[1].to(self.default_device)
+        y = data[1].to(self.default_device) #yにgTを代入する様子
 
         if self.curr_iter < self.config['train']['pretrain_iters']:
             self.model.set_mode('pretrain')
             pred_x, loss, loss_pred, loss_con, loss_graph = self.eval1(x, y)
-        else:
+        else: #推論では，eval2の方が使われる
             self.model.set_mode('train')
             pred_x, loss, loss_pred, loss_con, loss_graph = self.eval2(x, y)
 

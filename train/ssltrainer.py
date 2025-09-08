@@ -37,7 +37,7 @@ class SSLTrainer(Trainer):
                         T.RandomHorizontalFlip(),
                         T.RandomCrop(self.config['data']['shape'], padding=self.config['data']['shape']//16),
                         T.ToTensor()])
-
+        # undo
         # Tsimple = T.Compose([T.RandomHorizontalFlip(),
         #                      T.RandomCrop(self.config['data']['shape'], padding=self.config['data']['shape']//16),
         #                      T.ToTensor()])

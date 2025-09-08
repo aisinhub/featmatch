@@ -2,6 +2,10 @@ import math
 from torch.nn import functional as F
 from .backbone import *
 
+import os
+import torch
+import numpy as np
+
 
 class AttenHead(nn.Module):
     def __init__(self, fdim, num_heads=1):
@@ -67,14 +71,33 @@ class FeatMatch(nn.Module):
         elif self.mode == 'train':
             fx = self.extract_feature(x)
 
-            if self.devices is not None:
+            if self.devices is not None: #複数のGPUを使用する場合
                 inputs = (fx, fp.unsqueeze(0).repeat(len(self.devices), 1, 1))
                 fxg, wx = nn.parallel.data_parallel(self.atten, inputs, device_ids=self.devices)
             else:
                 fxg, wx = self.atten(fx, fp.unsqueeze(0))
 
             cls_xf = self.clf(fx)
-            cls_xg = self.clf(fxg)
+            cls_xg = self.clf(fxg) #グラフアテンションによって得られた特徴量fxgを、クラス数分のスコア値に変換する処理
+
+            # print("fxg_size", fxg.size())
+            
+            # fxgをtxtファイルに書き込む処理
+            # ファイルパスを指定。例として'fxg_output.txt'とします。
+            # output_file = 'fxg_output.csv'
+
+            # fxgをCPUに移動し、numpy配列に変換
+            # fxg_np = fxg.detach().cpu().numpy()
+            # np.savetxt(output_file, fxg_np, delimiter=',')
+
+            # # ファイルに書き込み
+            # with open(output_file, 'a') as f:
+            #     # データを各行に書き込む
+            #     for i in range(fxg_np.shape[0]):
+            #         f.write(' '.join(map(str, fxg_np[i])) + '\n')
+            
+            # print(f"fxg features have been written to {output_file}")
+            
 
             return cls_xg, cls_xf, fx, fxg, wx
 

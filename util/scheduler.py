@@ -11,7 +11,7 @@ class SupConvScheduler:
         self.end_lr = self.base_lr/1000.
         self.start_slope = (self.base_lr - self.start_lr) / pretrain_iters \
             if pretrain_iters != 0 and pretrain_iters is not None else None
-        self.ramp_slope = (max_lr - self.base_lr) / cycle_iters
+        self.ramp_slope = (max_lr - self.base_lr) / cycle_iters #学習率を線形的に上昇させる際の傾きを計算している
         self.end_slope = (self.base_lr - self.end_lr) / end_iters
 
         self.max_mom = max_mom

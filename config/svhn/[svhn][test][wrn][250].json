@@ -2,7 +2,7 @@
   "data":
   {
     "dataset": "svhn",
-    "root_dir": "dataset/svhn",
+    "root_dir": "/home/dataset_d2/svhn",
     "tgt_domains": "svhn",
     "src_domains": null,
     "shape": 32,
